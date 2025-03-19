@@ -8,7 +8,7 @@ export { Walktour }
 export { Mask };
 
 export { Step };
-export { MaskOptions };
+export type { MaskOptions };
 export { WalktourProps };
 export { WalktourLogic };
 export { WalktourOptions };
