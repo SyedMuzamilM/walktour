@@ -1,5 +1,5 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 import { Mask, MaskOptions } from './Mask';
 import { Tooltip } from './Tooltip';
 import { CardinalOrientation, OrientationCoords, getTargetPosition, getTooltipPosition } from '../utils/positioning';
@@ -27,10 +27,10 @@ export interface WalktourOptions {
   maskRadius?: number;
   tooltipSeparation?: number;
   transition?: string;
-  customTitleRenderer?: (title?: string, tourLogic?: WalktourLogic) => JSX.Element;
-  customDescriptionRenderer?: (description: string, tourLogic?: WalktourLogic) => JSX.Element;
-  customFooterRenderer?: (tourLogic?: WalktourLogic) => JSX.Element;
-  customTooltipRenderer?: (tourLogic?: WalktourLogic) => JSX.Element;
+  customTitleRenderer?: (title?: string, tourLogic?: WalktourLogic) => React.ReactElement;
+  customDescriptionRenderer?: (description: string, tourLogic?: WalktourLogic) => React.ReactElement;
+  customFooterRenderer?: (tourLogic?: WalktourLogic) => React.ReactElement;
+  customTooltipRenderer?: (tourLogic?: WalktourLogic) => React.ReactElement;
   customNextFunc?: (tourLogic: WalktourLogic, fromTarget?: boolean) => void;
   customPrevFunc?: (tourLogic: WalktourLogic) => void;
   customCloseFunc?: (tourLogic: WalktourLogic) => void;
@@ -46,7 +46,7 @@ export interface WalktourOptions {
   updateInterval?: number;
   renderTolerance?: number;
   disableMask?: boolean;
-  renderMask?: (maskOptions: MaskOptions) => JSX.Element;
+  renderMask?: React.FC<MaskOptions>;
   disableSmoothScroll?: boolean;
   allowForeignTarget?: boolean;
   nextOnTargetClick?: boolean;
@@ -375,19 +375,31 @@ export const Walktour = (props: WalktourProps) => {
     pointerEvents: 'auto'
   }
 
-  const MaskTag = renderMask ? renderMask : Mask;
-
   // render mask, tooltip, and their shared "portal" container
   const render = () => (
     <div
-      ref={ref => portal.current = ref}
+      ref={(ref) => {
+        if (ref) portal.current = ref;
+      }}
       id={getIdString(basePortalString, identifier)}
       style={portalStyle}
     >
       {tourRoot &&
         <>
-          {!disableMask &&
-            <MaskTag
+          {!disableMask && renderMask ? 
+            renderMask({
+              maskId: getIdString(baseMaskString, identifier),
+              targetInfo: getTargetInfo(tourRoot, target),
+              disableMaskInteraction,
+              disableCloseOnClick,
+              padding: maskPadding,
+              radius: maskRadius,
+              tourRoot,
+              close: tourLogic.close
+            })
+            :
+            !disableMask && 
+            <Mask
               maskId={getIdString(baseMaskString, identifier)}
               targetInfo={getTargetInfo(tourRoot, target)}
               disableMaskInteraction={disableMaskInteraction}
@@ -400,7 +412,9 @@ export const Walktour = (props: WalktourProps) => {
           }
 
           <div
-            ref={ref => tooltip.current = ref}
+            ref={(ref) => {
+              if (ref) tooltip.current = ref;
+            }}
             id={getIdString(baseTooltipContainerString, identifier)}
             style={tooltipContainerStyle}
             onKeyDown={keyPressHandler}
@@ -420,7 +434,7 @@ export const Walktour = (props: WalktourProps) => {
   // on first render, put everything in its normal context.
   // after first render (once we've determined the tour root) spawn a portal there for rendering.
   if (tourRoot) {
-    return ReactDOM.createPortal(render(), getValidPortalRoot(tourRoot));
+    return createPortal(render(), getValidPortalRoot(tourRoot));
   } else {
     return render();
   }

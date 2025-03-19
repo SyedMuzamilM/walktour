@@ -7,7 +7,7 @@
     "rootDirs": ["src", "stories"],
     "outDir": "dist",
     "module": "es6",
-    "jsx": "react",
+    "jsx": "react-jsx",
     "target": "es5",
     "lib": ["es5", "es6", "es7", "es2017", "es2018", "dom"],
     "strict": true,
@@ -15,7 +15,9 @@
     "declaration": true,
     "allowSyntheticDefaultImports": true,
     "noUnusedLocals": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "include": [
     "src/**/*"

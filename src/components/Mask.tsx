@@ -13,7 +13,7 @@ export interface MaskOptions {
   maskId: string;
 }
 
-export function Mask(props: MaskOptions): JSX.Element {
+export const Mask: React.FC<MaskOptions> = (props) => {
   const { targetInfo, disableMaskInteraction, padding, radius, tourRoot, close, disableCloseOnClick, maskId } = props;
   const {width: containerWidth, height: containerHeight} = getViewportScrollDims(tourRoot);
   const pathId = `clip-path-${maskId}`;
